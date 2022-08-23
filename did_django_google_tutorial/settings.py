@@ -136,3 +136,9 @@ RECAPCHAT_SECRET_KEY = ''
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = 'users:sign-in'
+LOGIN_REDIRECT_URL = 'users:account'
+LOGOUT_REDIRECT_URL = 'users:sign-in'
+
+BASE_COUNTRY = 'BR'
