@@ -44,3 +44,23 @@ def RedirectParams(**kwargs):
         query_string = urlencode(params)
         response['Location'] += '?' + query_string
     return response
+
+
+class AjaxFormMixin(object):
+    '''
+    Mixin to ajaxify django form - can be over written in view by calling 
+    '''
+
+    def form_invalid(self, form):
+        response = super(AjaxFormMixin, self).form_invalid(form)
+        if self.request.is_ajax():
+            message = FormErrors(form)
+            return JsonResponse({'result': 'Error', 'message': message})
+        return response
+    
+    def form_valid(self, form):
+        response = super(AjaxFormMixin, self).form_valid(form)
+        if self.request.is_ajax():
+            form.save()
+            return JsonResponse({'result': 'Success', 'message': ''})
+        return response
