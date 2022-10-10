@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth import Login, Logout, authenticate
+from django.contrib.auth import login, logout, authenticate, login
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.generic.edit import FormView
@@ -95,7 +95,7 @@ class SignUpView(AjaxFormMixin, FormView):
                 up.captcha_score = float(captcha['score'])
                 up.save()
 
-                Login(self.request, obj, backend='django.contrib.auth.backends.ModelBackend')
+                login(self.request, obj, backend='django.contrib.auth.backends.ModelBackend')
 
                 #change result & message to success
                 result = 'Success'
@@ -104,4 +104,31 @@ class SignUpView(AjaxFormMixin, FormView):
             data = {'result': result, 'message': message}
             return JsonResponse(data)
 
+        return response
+
+
+class SignInView(AjaxFormMixin, FormView):
+    '''
+    Generic FormView with our mixin for user sign-in
+    '''
+
+    template_name = 'users/sign_in.html'
+    form_class = AuthForm
+    success_url = '/'
+
+    def form_valid(self, form):
+        response = super(AjaxFormMixin, self).form_valid(form)
+        if self.request.is_ajax():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            #attempt to authenticate user
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(self.request, user, backend='django.contrib.auth.backends.ModelBackend')
+                result = 'Success'
+                message = 'You have been logged in.'
+            else:
+                message = FormErrors(form)
+            data = {'result': result, 'message': message}
+            return JsonResponse(data)
         return response
