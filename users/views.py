@@ -65,3 +65,43 @@ def ProfileView(request):
 
         return render(request, 'users/profile.html', context)
 
+
+class SignUpView(AjaxFormMixin, FormView):
+    '''
+    Generic FormView with our mixin for user sign-up with reCAPTURE security
+    '''
+
+    template_name = 'users/sign_up.html'
+    form_class = UserForm
+    success_url = '/'
+
+    #reCAPTURE key required in context
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['recapchat_site_key'] = settings.RECAPTCHA_PUBLIC_KEY
+        return context
+    
+    #over write the mixin logic to get, check and save reCAPTURE score
+    def form_valid(self, form):
+        response = super(AjaxFormMixin, self).form_valid(form)
+        if self.request.is_ajax():
+            token = form.cleaned_data.get('token')
+            captcha = reCAPTCHAValidation(token)
+            if captcha['success']:
+                obj = form.save()
+                obj.email = obj.username
+                obj.save()
+                up = obj.userprofile
+                up.captcha_score = float(captcha['score'])
+                up.save()
+
+                Login(self.request, obj, backend='django.contrib.auth.backends.ModelBackend')
+
+                #change result & message to success
+                result = 'Success'
+                message = 'Thank you for signing up.'
+            
+            data = {'result': result, 'message': message}
+            return JsonResponse(data)
+
+        return response
