@@ -5,7 +5,7 @@ from django import forms
 from .models import UserProfile
 
 
-class Userform(UserCreationForm):
+class UserForm(UserCreationForm):
     '''
     Form that uses built-in UserCreationForm to handel user creation
     '''
