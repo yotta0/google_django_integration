@@ -36,7 +36,7 @@ class AccountView(TemplateView):
         return super().dispatch(*args, **kwargs)
 
 
-def ProfileView(request):
+def profile_view(request):
     '''
     view to allow users to update their profile
     '''
