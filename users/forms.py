@@ -61,5 +61,3 @@ class UserProfileForm(ModelForm):
     class Meta:
         model = UserProfile
         fields = ('address', 'town', 'county', 'post_code', 'country', 'longitude', 'latitude', )
-    
-    
