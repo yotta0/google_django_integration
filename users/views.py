@@ -21,6 +21,9 @@ from .forms import (
     AuthForm,
 )
 
+result = 'error'
+message = 'There was an error, please try again.'
+
 
 class AccountView(TemplateView):
     '''
@@ -31,3 +34,34 @@ class AccountView(TemplateView):
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
+
+def ProfileView(request):
+    '''
+    view to allow users to update their profile
+    '''
+    user = request.user
+    up = user.userprofile
+
+    form = UserProfileForm(instance = up)
+
+
+    if request.is_ajax():
+        form = UserProfileForm(data = request.POST, instance = up)
+        if form.is_valid():
+            obj = form.save()
+            obj.has_profile = True
+            obj.save()
+            result = 'Success'
+            message = 'Your profile has been updated.'
+        else:
+            message = FormErrors(form)
+        data = {'result': result, 'message': message}
+        return JsonResponse(data)
+    else:
+        context = {'form': form}
+        context ['google_api_key'] = settings.GOOGLE_API_KEY
+        context['base_country'] = settings.BASE_COUNTRY
+
+        return render(request, 'users/profile.html', context)
+
